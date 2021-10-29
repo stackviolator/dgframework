@@ -11,11 +11,12 @@ import (
 	"time"
 )
 
-//TODO make the scanport func its own module?
+//TODO make the scanPort() func its own module?
 
 // Global vars for super cool colors
 var colorGreen string = "\033[32m"
 var colorReset string = "\033[0m"
+var colorRed string = "\033[31m"
 
 // Takes protocol, hostname and port to scan port, returns boolean
 func scanPort(protocol, hostname string, port int,) bool {
@@ -23,6 +24,7 @@ func scanPort(protocol, hostname string, port int,) bool {
 	conn, err := net.DialTimeout(protocol, address, 60*time.Second)
 
 	if err != nil {
+		fmt.Print("[" + colorRed + "*" + colorReset + "] Ran into error: ")
 		log.Fatalln(err)
 		return false
 	}
@@ -58,9 +60,9 @@ func main() {
 	hostname, port := getCommand()
 	portNumber, _ := strconv.Atoi(port)
 
-	fmt.Println(hostname)
-	fmt.Println("Scanning port")
+	fmt.Println("Scanning port...")
 	open := scanPort("tcp", hostname, portNumber)
+
 
 	if open {
 		fmt.Println("Open port found at " + colorGreen + hostname + ":" + port, colorReset)
