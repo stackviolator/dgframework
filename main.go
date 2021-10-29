@@ -11,6 +11,8 @@ import (
 	"time"
 )
 
+//TODO make the scanport func its own module?
+
 // Global vars for super cool colors
 var colorGreen string = "\033[32m"
 var colorReset string = "\033[0m"
@@ -30,6 +32,7 @@ func scanPort(protocol, hostname string, port int,) bool {
 }
 
 // Gets and handles input for commands
+//TODO actually process flags in commands lol
 func getCommand() (string, string) {
 	reader := bufio.NewReader(os.Stdin)
 
