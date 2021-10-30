@@ -10,22 +10,17 @@ import (
 	"strings"
 )
 
-//TODO make the scanPort() func its own module?
-// add an installer :0
+
 //TEST command:
 //scan -h google.com -p 80
 
 // Global vars for super cool colors
 var colorGreen = "\033[32m"
 var colorReset = "\033[0m"
-var colorRed = "\033[31m"
 
 
 // Gets and handles input for commands
-//TODO process arrow keys, add support for port ranges :)
-//		Thinking of doing -p 1, 100 for syntax, split cmd[portNumber] by the comma and covert to int? something like that
-//TODO need to wait to take multiple commands instead of one
-// Need to incorporate output to a file, as well as performing multiple scans - while loop in main, add a quit command
+
 func getCommand() (string, string) {
 	reader := bufio.NewReader(os.Stdin)
 	var hostname string
