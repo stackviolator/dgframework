@@ -3,15 +3,15 @@ package main
 import (
 	"bufio"
 	"fmt"
+	scanner "goHeartBleed/Scanner"
 	"log"
-	"net"
 	"os"
 	"strconv"
 	"strings"
-	"time"
 )
 
 //TODO make the scanPort() func its own module?
+// add an installer :0
 //TEST command:
 //scan -h google.com -p 80
 
@@ -20,25 +20,6 @@ var colorGreen = "\033[32m"
 var colorReset = "\033[0m"
 var colorRed = "\033[31m"
 
-// Takes protocol, hostname and port to scan port, returns boolean
-func scanPort(protocol, hostname string, port int,) bool {
-	address := hostname + ":" + strconv.Itoa(port)
-	conn, err := net.DialTimeout(protocol, address, 60*time.Second)
-
-	if err != nil {
-		fmt.Print("[" + colorRed + "*" + colorReset + "] Ran into error: ")
-		log.Fatalln(err)
-		return false
-	}
-
-	defer func(conn net.Conn) {
-		err := conn.Close()
-		if err != nil {
-			log.Fatalln(err)
-		}
-	}(conn)
-	return true
-}
 
 // Gets and handles input for commands
 //TODO process arrow keys, add support for port ranges :)
@@ -65,13 +46,13 @@ func getCommand() (string, string) {
 	case "scan":
 		hostInArray, hostIndex := checkContains(cmd, "-h")
 		portInArray, portIndex := checkContains(cmd, "-p")
-		if hostInArray && portInArray{
-			hostname = cmd[hostIndex +1]
+		if hostInArray && portInArray {
+			hostname = cmd[hostIndex+1]
 
-			if cmd[portIndex + 1] == "ALL" {
+			if cmd[portIndex+1] == "ALL" {
 				portNumber = "65536"
 			} else {
-				portNumber = cmd[portIndex + 1]
+				portNumber = cmd[portIndex+1]
 			}
 		} else if portInArray {
 			fmt.Println("Missing host")
@@ -109,14 +90,14 @@ func main() {
 	portNumber, _ := strconv.Atoi(port)
 
 	fmt.Println("Scanning host...")
-	open := scanPort("tcp", hostname, portNumber)
+	open := scanner.ScanPort("tcp", hostname, portNumber)
 
 	if open {
-		fmt.Println("Open port found at " + colorGreen + hostname + ":" + port, colorReset)
+		fmt.Println("Open port found at "+colorGreen+hostname+":"+port, colorReset)
 	}
 }
 
 // Welcome message
-func displayWelcomeMessage () {
+func displayWelcomeMessage() {
 	fmt.Println("   ____               ___ ___                           __       __________ .__                      .___    _________  .____     .___  \n  / ___\\  ____       /   |   \\   ____  _____  _______ _/  |_     \\______   \\|  |    ____   ____    __| _/    \\_   ___ \\ |    |    |   | \n / /_/  >/  _ \\     /    ~    \\_/ __ \\ \\__  \\ \\_  __ \\\\   __\\     |    |  _/|  |  _/ __ \\_/ __ \\  / __ |     /    \\  \\/ |    |    |   | \n \\___  /(  <_> )    \\    Y    /\\  ___/  / __ \\_|  | \\/ |  |       |    |   \\|  |__\\  ___/\\  ___/ / /_/ |     \\     \\____|    |___ |   | \n/_____/  \\____/      \\___|_  /  \\___  >(____  /|__|    |__|       |______  /|____/ \\___  >\\___  >\\____ |      \\______  /|_______ \\|___| \n                           \\/       \\/      \\/                           \\/            \\/     \\/      \\/             \\/         \\/     ")
 }
