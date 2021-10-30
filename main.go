@@ -10,31 +10,24 @@ import (
 	"strings"
 )
 
-
-//TEST command:
-//scan -h google.com -p 80
-
 // Global vars for super cool colors
 var colorGreen = "\033[32m"
 var colorReset = "\033[0m"
 
-
 // Gets and handles input for commands
-
-func getCommand() (string, string) {
+func getCommand() bool {
 	reader := bufio.NewReader(os.Stdin)
 	var hostname string
 	var portNumber string
 
-	displayWelcomeMessage()
-	fmt.Println("[" + string(colorGreen) + "*" + colorReset + "] Enter a command:")
+	fmt.Println("\n[" + string(colorGreen) + "*" + colorReset + "] Enter a command:")
 
 	input, err := reader.ReadString('\n')
 	if err != nil {
 		log.Fatalln(err)
 	}
-
 	cmd := strings.Fields(input)
+
 	switch cmd[0] {
 	case "help":
 		printHelp()
@@ -43,29 +36,29 @@ func getCommand() (string, string) {
 		portInArray, portIndex := checkContains(cmd, "-p")
 		if hostInArray && portInArray {
 			hostname = cmd[hostIndex+1]
-
 			if cmd[portIndex+1] == "ALL" {
 				portNumber = "65536"
 			} else {
 				portNumber = cmd[portIndex+1]
 			}
-		} else if portInArray {
-			fmt.Println("Missing host")
-		} else if hostInArray {
-			fmt.Println("Missing port")
+		} else if !hostInArray || !portInArray {
+			fmt.Println("Invalid syntax, check the 'help' command")
+			return true
 		}
-
 		fmt.Println(portNumber)
-		return hostname, portNumber
+		runScan(hostname, portNumber)
+		return true
+	case "quit":
+		return false
 	default:
 		printHelp()
 	}
-	return "", ""
+	return true
 }
 
 func printHelp() {
 	fmt.Println("Thank you for using my tool it make me happy thinking people are looking at this :) <3\nContact me via email: jpm7050@psu.edu")
-	fmt.Println("Usage [Command] [Options]")
+	fmt.Println("Usage:\n\t[Command] [Options]")
 	fmt.Println("----HELP----:\n\tWill display this message, have fun, go crazy")
 	fmt.Println("----SCAN----:\n\t-h: Used to specify the host name (full domain or IP)\n\t-p: Used to specify the port(s), a range can be specified with two ports separated by commas (-p 1,100), or ALL for all ports ")
 }
@@ -81,15 +74,24 @@ func checkContains(arr []string, str string) (bool, int) {
 }
 
 func main() {
-	hostname, port := getCommand()
-	portNumber, _ := strconv.Atoi(port)
 
+	displayWelcomeMessage()
+	running := getCommand()
+	for running {
+		running = getCommand()
+	}
+}
+
+func runScan(hostname string, port string) bool {
+	portNumber, _ := strconv.Atoi(port)
 	fmt.Println("Scanning host...")
 	open := scanner.ScanPort("tcp", hostname, portNumber)
 
 	if open {
 		fmt.Println("Open port found at "+colorGreen+hostname+":"+port, colorReset)
+		return true
 	}
+	return false
 }
 
 // Welcome message
