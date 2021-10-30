@@ -62,6 +62,7 @@ func printHelp() {
 	fmt.Println("Usage:\n\t[Command] [Options]")
 	fmt.Println("----HELP----:\n\tWill display this message, have fun, go crazy")
 	fmt.Println("----SCAN----:\n\t-h: Used to specify the host name (full domain or IP)\n\t-p: Used to specify the port(s), a range can be specified with two ports separated by commas (-p 1,100), or ALL for all ports ")
+	fmt.Println("----QUIT----\n\tWill quit the program")
 }
 
 // loops through the user inputted command and checks for a flag, returning a boolean and index in the array
