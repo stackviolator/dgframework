@@ -19,7 +19,8 @@ var colorRed = "\033[31m"
 func getCommand() bool {
 	reader := bufio.NewReader(os.Stdin)
 	var hostname string
-	var portNumber string
+	var portNumbers []string
+	var portIntegers []int
 
 	fmt.Println("\n[" + string(colorGreen) + "*" + colorReset + "] Enter a command:")
 
@@ -38,16 +39,37 @@ func getCommand() bool {
 		if hostInArray && portInArray {
 			hostname = cmd[hostIndex+1]
 			if cmd[portIndex+1] == "ALL" {
-				portNumber = "65536"
+				portNumbers = append(portNumbers, "1")
+				portNumbers = append(portNumbers, "65536")
+			}
+			if strings.Contains(cmd[portIndex + 1], ",") {
+				portArray := strings.Split(cmd[portIndex + 1], ",")
+				for i := range portArray {
+					portNumbers = append(portNumbers, portArray[i])
+				}
 			} else {
-				portNumber = cmd[portIndex+1]
+				portNumbers = append(portNumbers, cmd[portIndex+1])
 			}
 		} else if !hostInArray || !portInArray {
 			fmt.Println("Invalid syntax, check the 'help' command")
 			return true
 		}
-		fmt.Println(portNumber)
-		runScan(hostname, portNumber)
+		//fmt.Println(portNumbers)
+
+		for j, number := range portNumbers {
+			intToAdd, _ := strconv.Atoi(number)
+			portIntegers = append(portIntegers, intToAdd)
+			j = j
+		}
+
+		if len(portIntegers) >= 2 {
+			for i := portIntegers[0]; i <= portIntegers[1]; i++ {
+				runScan(hostname, strconv.Itoa(i))
+			}
+		} else {
+			runScan(hostname, strconv.Itoa(portIntegers[0]))
+		}
+
 		return true
 	case "quit":
 		return false
@@ -86,14 +108,16 @@ func main() {
 
 func runScan(hostname string, port string) bool {
 	portNumber, _ := strconv.Atoi(port)
-	fmt.Println("Scanning host...")
+	fmt.Println("Scanning host...", hostname + ":" + strconv.Itoa(portNumber))
 	open := scanner.ScanPort("tcp", hostname, portNumber)
 
 	if open {
 		fmt.Println("Open port found at "+colorGreen+hostname+":"+port, colorReset)
 		return true
+	} else {
+		// fmt.Println("Port", port + colorRed, "Closed", colorReset)  TODO if verbose mode is added print this
+		return false
 	}
-	return false
 }
 
 // Welcome message
