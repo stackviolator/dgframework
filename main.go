@@ -30,7 +30,12 @@ func getCommand() bool {
 	if err != nil {
 		log.Fatalln(err)
 	}
+
 	cmd := strings.Fields(input)
+
+	if len(cmd) <= 0 {
+		cmd = append(cmd, "help");
+	}
 
 	// switch statement to handle commands
 	switch cmd[0] {
