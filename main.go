@@ -39,6 +39,8 @@ func getCommand() bool {
 
 	// switch statement to handle commands
 	switch cmd[0] {
+	case "clear":
+		fmt.Println("\033[H\033[2J")
 	case "help":
 		printHelp()
 	case "scan":
@@ -107,6 +109,7 @@ func printHelp() {
 	fmt.Println("----HELP----:\n\tWill display this message, have fun, go crazy")
 	fmt.Println("----SCAN----:\n\t-h: Used to specify the host name (full domain or IP)\n\t-p: Used to specify the port(s), a range can be specified with two ports separated by commas (-p 1,100), or ALL for all ports ")
 	fmt.Println("----QUIT----\n\tWill quit the program")
+	fmt.Println("----CLEAR----\n\tI feel like this is very self-explanatory")
 }
 
 // loops through the user inputted command and checks for a flag, returning a boolean and index in the array
@@ -149,5 +152,3 @@ func displayWelcomeMessage() {
 	fmt.Println(colorRed, "   ____               ___ ___                           __       __________ .__                      .___    _________  .____     .___  \n  / ___\\  ____       /   |   \\   ____  _____  _______ _/  |_     \\______   \\|  |    ____   ____    __| _/    \\_   ___ \\ |    |    |   | \n / /_/  >/  _ \\     /    ~    \\_/ __ \\ \\__  \\ \\_  __ \\\\   __\\     |    |  _/|  |  _/ __ \\_/ __ \\  / __ |     /    \\  \\/ |    |    |   | \n \\___  /(  <_> )    \\    Y    /\\  ___/  / __ \\_|  | \\/ |  |       |    |   \\|  |__\\  ___/\\  ___/ / /_/ |     \\     \\____|    |___ |   | \n/_____/  \\____/      \\___|_  /  \\___  >(____  /|__|    |__|       |______  /|____/ \\___  >\\___  >\\____ |      \\______  /|_______ \\|___| \n                           \\/       \\/      \\/                           \\/            \\/     \\/      \\/             \\/         \\/     ")
 	fmt.Println(colorReset + "Thank you for using my tool it make me happy thinking people are looking at this :) <3\nContact me via email: jpm7050@psu.edu or joshmerrill255@gmail.com <3")
 }
-
-// balls
