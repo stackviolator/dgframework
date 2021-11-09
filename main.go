@@ -126,4 +126,3 @@ func displayWelcomeMessage() {
 	fmt.Println(colorReset + "Thank you for using my tool it make me happy thinking people are looking at this :) <3\nContact me via email: jpm7050@psu.edu")
 }
 
-// this is a test
