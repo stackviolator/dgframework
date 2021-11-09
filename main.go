@@ -5,9 +5,11 @@ import (
 	"fmt"
 	scanner "goHeartBleed/Scanner"
 	"log"
+	"time"
 	"os"
 	"strconv"
 	"strings"
+	"sync"
 )
 
 // Global vars for super cool colors
@@ -30,6 +32,7 @@ func getCommand() bool {
 	}
 	cmd := strings.Fields(input)
 
+	// switch statement to handle commands
 	switch cmd[0] {
 	case "help":
 		printHelp()
@@ -54,7 +57,6 @@ func getCommand() bool {
 			fmt.Println("Invalid syntax, check the 'help' command")
 			return true
 		}
-		//fmt.Println(portNumbers)
 
 		for j, number := range portNumbers {
 			intToAdd, _ := strconv.Atoi(number)
@@ -62,12 +64,27 @@ func getCommand() bool {
 			j = j
 		}
 
+		// If there is more than one port specified
 		if len(portIntegers) >= 2 {
+			var wg sync.WaitGroup
+			wg.Add(portIntegers[1] - portIntegers[0] + 1)
+			sec := time.Now().UnixNano()
 			for i := portIntegers[0]; i <= portIntegers[1]; i++ {
-				runScan(hostname, strconv.Itoa(i))
+				go runScan(hostname, strconv.Itoa(i), &wg)
 			}
+			wg.Wait()
+			sec2 := time.Now().UnixNano()
+			difference := (sec2 - sec) / 1000000000
+			fmt.Println("Scanned", portIntegers[1] - portIntegers[0]  +1, "ports in", difference, "seconds")
+
+			// if one port is specified
 		} else {
-			runScan(hostname, strconv.Itoa(portIntegers[0]))
+			var wg sync.WaitGroup
+			wg.Add(100)
+			for i := 0; i < 100; i++ {
+				go runScan(hostname, strconv.Itoa(portIntegers[0] + i), &wg)
+			}
+			wg.Wait() // blocks until 0
 		}
 
 		return true
@@ -106,16 +123,18 @@ func main() {
 	}
 }
 
-func runScan(hostname string, port string) bool {
+func runScan(hostname string, port string, wg *sync.WaitGroup) bool {
 	portNumber, _ := strconv.Atoi(port)
-	fmt.Println("Scanning host...", hostname + ":" + strconv.Itoa(portNumber))
+	// fmt.Println("Scanning host...", hostname + ":" + strconv.Itoa(portNumber))
 	open := scanner.ScanPort("tcp", hostname, portNumber)
 
 	if open {
 		fmt.Println("Open port found at "+colorGreen+hostname+":"+port, colorReset)
+		wg.Done()
 		return true
 	} else {
-		// fmt.Println("Port", port + colorRed, "Closed", colorReset)  TODO if verbose mode is added print this
+		// fmt.Println("Port", port + colorRed, "Closed", colorReset)  // TODO if verbose mode is added print this
+		wg.Done()
 		return false
 	}
 }
@@ -123,7 +142,7 @@ func runScan(hostname string, port string) bool {
 // Welcome message
 func displayWelcomeMessage() {
 	fmt.Println(colorRed, "   ____               ___ ___                           __       __________ .__                      .___    _________  .____     .___  \n  / ___\\  ____       /   |   \\   ____  _____  _______ _/  |_     \\______   \\|  |    ____   ____    __| _/    \\_   ___ \\ |    |    |   | \n / /_/  >/  _ \\     /    ~    \\_/ __ \\ \\__  \\ \\_  __ \\\\   __\\     |    |  _/|  |  _/ __ \\_/ __ \\  / __ |     /    \\  \\/ |    |    |   | \n \\___  /(  <_> )    \\    Y    /\\  ___/  / __ \\_|  | \\/ |  |       |    |   \\|  |__\\  ___/\\  ___/ / /_/ |     \\     \\____|    |___ |   | \n/_____/  \\____/      \\___|_  /  \\___  >(____  /|__|    |__|       |______  /|____/ \\___  >\\___  >\\____ |      \\______  /|_______ \\|___| \n                           \\/       \\/      \\/                           \\/            \\/     \\/      \\/             \\/         \\/     ")
-	fmt.Println(colorReset + "Thank you for using my tool it make me happy thinking people are looking at this :) <3\nContact me via email: jpm7050@psu.edu")
+	fmt.Println(colorReset + "Thank you for using my tool it make me happy thinking people are looking at this :) <3\nContact me via email: jpm7050@psu.edu or joshmerrill255@gmail.com <3")
 }
 
 // balls
