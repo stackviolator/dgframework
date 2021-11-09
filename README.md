@@ -1,5 +1,6 @@
 # goHeartBleed
-HeartBleed (CVE-2014-0160) vulnerability detector written in go, hopefully a webapp added soon :)
+Port scanner written in go which takes advantage of goroutines to be super epic and speedy
+Will add support to be a HeartBleed (CVE-2014-0160) vulnerability detector and hopefully a webapp added soon :)
 # Usage
 Run the binary however your heart desires\
 Example command:\
