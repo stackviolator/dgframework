@@ -21,7 +21,7 @@ var colorRed = "\033[31m"
 func getCommand() bool {
 	var command []string
 	reader := bufio.NewReader(os.Stdin)
-	fmt.Println("\n[" + string(colorGreen) + "*" + colorReset + "] Enter a command:")
+	fmt.Print("\n[" + string(colorGreen) + "*" + colorReset + "]gsf > ")
 
 	input, err := reader.ReadString('\n')
 	if err != nil {
@@ -138,6 +138,7 @@ func main() {
 		os.Exit(0)
 	}
 
+	displayWelcomeMessage()
 	// for full cli interactive mode
 	running := getCommand()
 	for running {
