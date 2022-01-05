@@ -49,6 +49,7 @@ func handleCommand(cmd[] string) bool {
 	case "help":
 		printHelp()
 	case "scan":
+		verbose, _ := checkContains(cmd, "-v")
 		hostInArray, hostIndex := checkContains(cmd, "-h")
 		portInArray, portIndex := checkContains(cmd, "-p")
 		if hostInArray && portInArray {
@@ -82,7 +83,7 @@ func handleCommand(cmd[] string) bool {
 			wg.Add(portIntegers[1] - portIntegers[0] + 1)
 			sec := time.Now().UnixNano()
 			for i := portIntegers[0]; i <= portIntegers[1]; i++ {
-				go runScan(hostname, strconv.Itoa(i), &wg)
+				go runScan(hostname, strconv.Itoa(i), &wg, verbose)
 			}
 			wg.Wait()
 			sec2 := time.Now().UnixNano()
@@ -94,7 +95,7 @@ func handleCommand(cmd[] string) bool {
 			var wg sync.WaitGroup
 			wg.Add(100)
 			for i := 0; i < 100; i++ {
-				go runScan(hostname, strconv.Itoa(portIntegers[0] + i), &wg)
+				go runScan(hostname, strconv.Itoa(portIntegers[0] + i), &wg, verbose)
 			}
 			wg.Wait() // blocks until 0
 		}
@@ -146,7 +147,7 @@ func main() {
 	hb.Send_hb()
 }
 
-func runScan(hostname string, port string, wg *sync.WaitGroup) bool {
+func runScan(hostname string, port string, wg *sync.WaitGroup, verbose bool) bool {
 	portNumber, _ := strconv.Atoi(port)
 	// fmt.Println("Scanning host...", hostname + ":" + strconv.Itoa(portNumber))
 	open := scanner.ScanPort("tcp", hostname, portNumber)
@@ -156,7 +157,9 @@ func runScan(hostname string, port string, wg *sync.WaitGroup) bool {
 		wg.Done()
 		return true
 	} else {
-		// fmt.Println("Port", port + colorRed, "Closed", colorReset)  // TODO if verbose mode is added print this
+		if (verbose) {
+			fmt.Println("Port", port + colorRed, "Closed", colorReset)  // TODO if verbose mode is added print this
+		}
 		wg.Done()
 		return false
 	}
