@@ -96,8 +96,6 @@ func handleCommand(cmd []string) bool {
 
 		if len(portIntegers) < 2 {
 			portIntegers = append(portIntegers, portIntegers[0])
-			// portIntegers[0] = 0
-
 		}
 
 		// If there is more than one port specified
