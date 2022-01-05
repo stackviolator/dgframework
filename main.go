@@ -6,11 +6,12 @@ import (
 	hb "goHeartBleed/Heartbeat"
 	scanner "goHeartBleed/Scanner"
 	"log"
-	"time"
 	"os"
+	"sort"
 	"strconv"
 	"strings"
-	"sync"
+	"time"
+
 	"github.com/common-nighthawk/go-figure"
 )
 
@@ -36,12 +37,12 @@ func getCommand() bool {
 	return running
 }
 
-
 // Gets and handles input for commands
-func handleCommand(cmd[] string) bool {
+func handleCommand(cmd []string) bool {
 	var hostname string
 	var portNumbers []string
 	var portIntegers []int
+	numRoutines := 1000
 
 	// switch statement to handle commands
 	switch cmd[0] {
@@ -50,17 +51,27 @@ func handleCommand(cmd[] string) bool {
 	case "help":
 		printHelp()
 	case "scan":
+		routinesInArray, routinesIndex := checkContains(cmd, "-T")
 		verbose, _ := checkContains(cmd, "-v")
 		hostInArray, hostIndex := checkContains(cmd, "-h")
 		portInArray, portIndex := checkContains(cmd, "-p")
+		if routinesInArray {
+			if cmd[routinesIndex+1] == "MAX" {
+				numRoutines = 10000
+			}
+			numRoutines, _ = strconv.Atoi(cmd[routinesIndex+1])
+			if numRoutines > 10000 {
+				numRoutines = 10000
+			}
+		}
 		if hostInArray && portInArray {
 			hostname = cmd[hostIndex+1]
 			if cmd[portIndex+1] == "ALL" {
 				portNumbers = append(portNumbers, "1")
 				portNumbers = append(portNumbers, "65536")
 			}
-			if strings.Contains(cmd[portIndex + 1], ",") {
-				portArray := strings.Split(cmd[portIndex + 1], ",")
+			if strings.Contains(cmd[portIndex+1], ",") {
+				portArray := strings.Split(cmd[portIndex+1], ",")
 				for i := range portArray {
 					portNumbers = append(portNumbers, portArray[i])
 				}
@@ -78,28 +89,50 @@ func handleCommand(cmd[] string) bool {
 			j = j
 		}
 
-		// If there is more than one port specified
-		if len(portIntegers) >= 2 {
-			var wg sync.WaitGroup
-			wg.Add(portIntegers[1] - portIntegers[0] + 1)
-			sec := time.Now().UnixNano()
-			for i := portIntegers[0]; i <= portIntegers[1]; i++ {
-				go runScan(hostname, strconv.Itoa(i), &wg, verbose)
-			}
-			wg.Wait()
-			sec2 := time.Now().UnixNano()
-			difference := (sec2 - sec) / 1000000000
-			fmt.Println("Scanned", portIntegers[1] - portIntegers[0]  +1, "ports in", difference, "seconds")
+		ports := make(chan int, numRoutines)
+		results := make(chan int)
+		var openports []int
+		var closedports []int
 
-			// if one port is specified
-		} else {
-			var wg sync.WaitGroup
-			wg.Add(100)
-			for i := 0; i < 100; i++ {
-				go runScan(hostname, strconv.Itoa(portIntegers[0] + i), &wg, verbose)
-			}
-			wg.Wait() // blocks until 0
+		if len(portIntegers) < 2 {
+			portIntegers = append(portIntegers, portIntegers[0])
+			// portIntegers[0] = 0
+
 		}
+
+		// If there is more than one port specified
+		sec := time.Now().UnixNano()
+
+		for i := 0; i < cap(ports); i++ {
+			go runScan(hostname, ports, verbose, results)
+		}
+
+		go func() {
+			for i := portIntegers[0]; i <= portIntegers[1]; i++ {
+				ports <- i
+			}
+		}()
+
+		for i := portIntegers[0]; i <= portIntegers[1]; i++ {
+			port := <-results
+			if port != 0 {
+				openports = append(openports, port)
+			} else {
+				closedports = append(closedports, port)
+			}
+		}
+
+		close(ports)
+		close(results)
+
+		sort.Ints(openports)
+		for _, port := range openports {
+			fmt.Println("Open port found at "+colorGreen+hostname+":"+strconv.Itoa(port), colorReset)
+		}
+
+		difference := (time.Now().UnixNano() - sec) / 1000000000
+
+		fmt.Println("Scanned", portIntegers[1]-portIntegers[0]+1, "ports in", difference, "seconds")
 
 		return true
 	case "quit":
@@ -114,7 +147,7 @@ func printHelp() {
 
 	fmt.Println("Usage:\n\t[Command] [Options]")
 	fmt.Println("----HELP----:\n\tWill display this message, have fun, go crazy")
-	fmt.Println("----SCAN----:\n\t-h: Used to specify the host name (full domain or IP)\n\t-p: Used to specify the port(s), a range can be specified with two ports separated by commas (-p 1,100), or ALL for all ports ")
+	fmt.Println("----SCAN----:\n\t-h: Used to specify the host name (full domain or IP)\n\t-p: Used to specify the port(s), a range can be specified with two ports separated by commas (-p 1,100), or ALL for all ports\n\t-T: Used to specifc the amount of goroutines used. Use MAX for 10000+ routines (speeds up scan)\n\t-v: Verbose mode")
 	fmt.Println("----QUIT----\n\tWill quit the program")
 	fmt.Println("----CLEAR----\n\tI feel like this is very self-explanatory")
 }
@@ -129,21 +162,21 @@ func checkContains(arr []string, str string) (bool, int) {
 	return false, -1
 }
 
-func runScan(hostname string, port string, wg *sync.WaitGroup, verbose bool) bool {
-	portNumber, _ := strconv.Atoi(port)
-	// fmt.Println("Scanning host...", hostname + ":" + strconv.Itoa(portNumber))
-	open := scanner.ScanPort("tcp", hostname, portNumber)
-
-	if open {
-		fmt.Println("Open port found at "+colorGreen+hostname+":"+port, colorReset)
-		wg.Done()
-		return true
-	} else {
-		if (verbose) {
-			fmt.Println("Port", port + colorRed, "Closed", colorReset)  // TODO if verbose mode is added print this
+func runScan(hostname string, ports chan int, verbose bool, results chan int) {
+	for p := range ports {
+		open := scanner.ScanPort("tcp", hostname, p)
+		if open {
+			if verbose {
+				fmt.Println("Port", strconv.Itoa(p)+colorGreen, "Open", colorReset)
+			}
+			results <- p
+			continue
+		} else {
+			results <- 0
+			if verbose {
+				fmt.Println("Port", strconv.Itoa(p)+colorRed, "Closed", colorReset)
+			}
 		}
-		wg.Done()
-		return false
 	}
 }
 
@@ -155,7 +188,6 @@ func displayWelcomeMessage() {
 	banner := figure.NewFigure("goScan Framework", "larry3d", true)
 	banner.Print()
 
-
 	fmt.Println(colorReset + "Thank you for using my tool it make me happy thinking people are looking at this :) <3\nContact me via email: jpm7050@psu.edu or joshmerrill255@gmail.com <3")
 }
 
@@ -163,7 +195,7 @@ func main() {
 	argc := len(os.Args[1:])
 
 	// for just sweet cli action
-	if (argc > 0) {
+	if argc > 0 {
 		displayWelcomeMessage()
 		handleCommand(os.Args[1:])
 		os.Exit(0)
@@ -178,4 +210,3 @@ func main() {
 
 	hb.Send_hb()
 }
-
