@@ -32,6 +32,10 @@ func getCommand() bool {
 
 	command = strings.Fields(input)
 
+	if len(command) == 0 {
+		command = append(command, "balllsss lol")
+	}
+
 	running := handleCommand(command)
 
 	return running
@@ -92,7 +96,6 @@ func handleCommand(cmd []string) bool {
 		ports := make(chan int, numRoutines)
 		results := make(chan int)
 		var openports []int
-		var closedports []int
 
 		if len(portIntegers) < 2 {
 			portIntegers = append(portIntegers, portIntegers[0])
@@ -115,8 +118,6 @@ func handleCommand(cmd []string) bool {
 			port := <-results
 			if port != 0 {
 				openports = append(openports, port)
-			} else {
-				closedports = append(closedports, port)
 			}
 		}
 
@@ -124,6 +125,7 @@ func handleCommand(cmd []string) bool {
 		close(results)
 
 		sort.Ints(openports)
+
 		for _, port := range openports {
 			fmt.Println("Open port found at "+colorGreen+hostname+":"+strconv.Itoa(port), colorReset)
 		}
@@ -171,9 +173,6 @@ func runScan(hostname string, ports chan int, verbose bool, results chan int) {
 			continue
 		} else {
 			results <- 0
-			if verbose {
-				fmt.Println("Port", strconv.Itoa(p)+colorRed, "Closed", colorReset)
-			}
 		}
 	}
 }
@@ -186,7 +185,7 @@ func displayWelcomeMessage() {
 	banner := figure.NewFigure("goScan Framework", "larry3d", true)
 	banner.Print()
 
-	fmt.Println(colorReset + "Thank you for using my tool it make me happy thinking people are looking at this :) <3\nContact me via email: jpm7050@psu.edu or joshmerrill255@gmail.com <3")
+	fmt.Println(colorReset + "Thank you for using our tool it makes us happy thinking people are looking at this :) <3\nContact us via email: \nJosh \t- jpm7050@psu.edu or joshmerrill@duck.com <3 \nAndrew \t- adm5859@psu.edu ")
 }
 
 func main() {
