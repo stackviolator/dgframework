@@ -1,6 +1,6 @@
-# goHeartBleed
-Port scanner written in go which takes advantage of goroutines to be super epic and speedy\
-Will add support to be a HeartBleed (CVE-2014-0160) vulnerability detector and hopefully a webapp added soon :)
+# goScan Framework
+very cool and super epic framework used for port/ vuln scanning + exploitation\
+Work in progress to fill out with exploits and webapp\
 # Usage
 Run the binary however your heart desires\
 Example command:\
