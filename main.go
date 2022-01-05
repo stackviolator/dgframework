@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"fmt"
+	hb "goHeartBleed/Heartbeat"
 	scanner "goHeartBleed/Scanner"
 	"log"
 	"time"
@@ -17,13 +18,9 @@ var colorGreen = "\033[32m"
 var colorReset = "\033[0m"
 var colorRed = "\033[31m"
 
-// Gets and handles input for commands
 func getCommand() bool {
+	var command []string
 	reader := bufio.NewReader(os.Stdin)
-	var hostname string
-	var portNumbers []string
-	var portIntegers []int
-
 	fmt.Println("\n[" + string(colorGreen) + "*" + colorReset + "] Enter a command:")
 
 	input, err := reader.ReadString('\n')
@@ -31,11 +28,19 @@ func getCommand() bool {
 		log.Fatalln(err)
 	}
 
-	cmd := strings.Fields(input)
+	command = strings.Fields(input)
 
-	if len(cmd) <= 0 {
-		cmd = append(cmd, "help");
-	}
+	running := handleCommand(command)
+
+	return running
+}
+
+
+// Gets and handles input for commands
+func handleCommand(cmd[] string) bool {
+	var hostname string
+	var portNumbers []string
+	var portIntegers []int
 
 	// switch statement to handle commands
 	switch cmd[0] {
@@ -96,7 +101,7 @@ func getCommand() bool {
 
 		return true
 	case "quit":
-		return false
+		os.Exit(0)
 	default:
 		printHelp()
 	}
@@ -123,12 +128,22 @@ func checkContains(arr []string, str string) (bool, int) {
 }
 
 func main() {
+	argc := len(os.Args[1:])
 
-	displayWelcomeMessage()
+	// for just sweet cli action
+	if (argc > 0) {
+		displayWelcomeMessage()
+		handleCommand(os.Args[1:])
+		os.Exit(0)
+	}
+
+	// for full cli interactive mode
 	running := getCommand()
 	for running {
 		running = getCommand()
 	}
+
+	hb.Send_hb()
 }
 
 func runScan(hostname string, port string, wg *sync.WaitGroup) bool {
