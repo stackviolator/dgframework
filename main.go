@@ -11,6 +11,7 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"github.com/common-nighthawk/go-figure"
 )
 
 // Global vars for super cool colors
@@ -128,26 +129,6 @@ func checkContains(arr []string, str string) (bool, int) {
 	return false, -1
 }
 
-func main() {
-	argc := len(os.Args[1:])
-
-	// for just sweet cli action
-	if (argc > 0) {
-		displayWelcomeMessage()
-		handleCommand(os.Args[1:])
-		os.Exit(0)
-	}
-
-	displayWelcomeMessage()
-	// for full cli interactive mode
-	running := getCommand()
-	for running {
-		running = getCommand()
-	}
-
-	hb.Send_hb()
-}
-
 func runScan(hostname string, port string, wg *sync.WaitGroup, verbose bool) bool {
 	portNumber, _ := strconv.Atoi(port)
 	// fmt.Println("Scanning host...", hostname + ":" + strconv.Itoa(portNumber))
@@ -168,7 +149,33 @@ func runScan(hostname string, port string, wg *sync.WaitGroup, verbose bool) boo
 
 // Welcome message
 func displayWelcomeMessage() {
-	fmt.Println(colorRed, "   ____               ___ ___                           __       __________ .__                      .___    _________  .____     .___  \n  / ___\\  ____       /   |   \\   ____  _____  _______ _/  |_     \\______   \\|  |    ____   ____    __| _/    \\_   ___ \\ |    |    |   | \n / /_/  >/  _ \\     /    ~    \\_/ __ \\ \\__  \\ \\_  __ \\\\   __\\     |    |  _/|  |  _/ __ \\_/ __ \\  / __ |     /    \\  \\/ |    |    |   | \n \\___  /(  <_> )    \\    Y    /\\  ___/  / __ \\_|  | \\/ |  |       |    |   \\|  |__\\  ___/\\  ___/ / /_/ |     \\     \\____|    |___ |   | \n/_____/  \\____/      \\___|_  /  \\___  >(____  /|__|    |__|       |______  /|____/ \\___  >\\___  >\\____ |      \\______  /|_______ \\|___| \n                           \\/       \\/      \\/                           \\/            \\/     \\/      \\/             \\/         \\/     ")
+
+	fmt.Print(colorRed)
+	// git repo has lots of fonts to choose from
+	banner := figure.NewFigure("goScan Framework", "larry3d", true)
+	banner.Print()
+
+
 	fmt.Println(colorReset + "Thank you for using my tool it make me happy thinking people are looking at this :) <3\nContact me via email: jpm7050@psu.edu or joshmerrill255@gmail.com <3")
+}
+
+func main() {
+	argc := len(os.Args[1:])
+
+	// for just sweet cli action
+	if (argc > 0) {
+		displayWelcomeMessage()
+		handleCommand(os.Args[1:])
+		os.Exit(0)
+	}
+
+	displayWelcomeMessage()
+	// for full cli interactive mode
+	running := getCommand()
+	for running {
+		running = getCommand()
+	}
+
+	hb.Send_hb()
 }
 
