@@ -23,7 +23,7 @@ var colorRed = "\033[31m"
 func getCommand() bool {
 	var command []string
 	reader := bufio.NewReader(os.Stdin)
-	fmt.Print("\n[" + string(colorGreen) + "*" + colorReset + "]gsf > ")
+	fmt.Print("\n[" + string(colorGreen) + "*" + colorReset + "]DGF > ")
 
 	input, err := reader.ReadString('\n')
 	if err != nil {
@@ -182,7 +182,7 @@ func displayWelcomeMessage() {
 
 	fmt.Print(colorRed)
 	// git repo has lots of fonts to choose from
-	banner := figure.NewFigure("goScan Framework", "larry3d", true)
+	banner := figure.NewFigure("DG Framework", "larry3d", true)
 	banner.Print()
 
 	fmt.Println(colorReset + "Thank you for using our tool it makes us happy thinking people are looking at this :) <3\nContact us via email: \nJosh \t- jpm7050@psu.edu or joshmerrill@duck.com <3 \nAndrew \t- adm5859@psu.edu ")
