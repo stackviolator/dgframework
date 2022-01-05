@@ -8,4 +8,4 @@ scan -h google.com -p 443\
 Or run "help"
 # Installation
 Clone the repository `git clone https://github.com/joshmerr/goHeartBleed` \
-Build the binary `go build main.go`
+Build the binary `go build -o bin/bestGoProgramEver main.go`
