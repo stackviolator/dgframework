@@ -1,11 +1,10 @@
 package main
 
 import (
-	"bufio"
 	"fmt"
 	hb "goHeartBleed/Heartbeat"
+	keys "goHeartBleed/Keyboard"
 	scanner "goHeartBleed/Scanner"
-	"log"
 	"os"
 	"sort"
 	"strconv"
@@ -13,6 +12,7 @@ import (
 	"time"
 
 	"github.com/common-nighthawk/go-figure"
+	term "github.com/nsf/termbox-go"
 )
 
 // Global vars for super cool colors
@@ -22,13 +22,9 @@ var colorRed = "\033[31m"
 
 func getCommand() bool {
 	var command []string
-	reader := bufio.NewReader(os.Stdin)
-	fmt.Print("\n[" + string(colorGreen) + "*" + colorReset + "]DGF > ")
+	fmt.Print("\n[" + string(colorGreen) + "*" + colorReset + "]DGF -- ")
 
-	input, err := reader.ReadString('\n')
-	if err != nil {
-		log.Fatalln(err)
-	}
+	input := keys.Listener()
 
 	command = strings.Fields(input)
 
@@ -93,27 +89,37 @@ func handleCommand(cmd []string) bool {
 			j = j
 		}
 
+		// Channel of the size of the the gorountines to be run at once
+		// Defines worker pool size
 		ports := make(chan int, numRoutines)
+
+		// Channel for the results of a scan
 		results := make(chan int)
+
+		// Array for which ports are open
 		var openports []int
 
+		// If there is less than one port in the array, append the same port to the end
+		// e.g. [80] -> [80,80] this will only scan the one port
 		if len(portIntegers) < 2 {
 			portIntegers = append(portIntegers, portIntegers[0])
 		}
 
-		// If there is more than one port specified
 		sec := time.Now().UnixNano()
 
+		// While there are still workers in the pool, run a new goroutine of the scan
 		for i := 0; i < cap(ports); i++ {
 			go runScan(hostname, ports, verbose, results)
 		}
 
+		// Adds a new port number to the list of ports to be scanned
 		go func() {
 			for i := portIntegers[0]; i <= portIntegers[1]; i++ {
 				ports <- i
 			}
 		}()
 
+		// Sends the result to the var port, if it is 0, then the port is closed
 		for i := portIntegers[0]; i <= portIntegers[1]; i++ {
 			port := <-results
 			if port != 0 {
@@ -165,15 +171,19 @@ func checkContains(arr []string, str string) (bool, int) {
 }
 
 func runScan(hostname string, ports chan int, verbose bool, results chan int) {
+	// Since the scan will only run when a new port is added to the queue, the length of the channel is the next port to scan
+	// e.g. will run at 1 then 2 then 3... then 50 etc. etc
 	for p := range ports {
 		open := scanner.ScanPort("tcp", hostname, p)
 		if open {
 			if verbose {
 				fmt.Println("Port", strconv.Itoa(p)+colorGreen, "Open", colorReset)
 			}
+			// If port is open send results the port #
 			results <- p
 			continue
 		} else {
+			// Else send a 0
 			results <- 0
 		}
 	}
@@ -193,19 +203,24 @@ func displayWelcomeMessage() {
 func main() {
 	argc := len(os.Args[1:])
 
-	// for just sweet cli action
+	// for just sweet cli headless action
 	if argc > 0 {
 		displayWelcomeMessage()
 		handleCommand(os.Args[1:])
 		os.Exit(0)
 	}
 
+	// for full cli interactive mode (cli app)
+	err := term.Init()
+	if err != nil {
+		panic(err)
+	}
+
+	defer term.Close()
+
 	displayWelcomeMessage()
-	// for full cli interactive mode
 	running := getCommand()
 	for running {
 		running = getCommand()
 	}
-
-	hb.Send_hb()
 }
