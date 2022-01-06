@@ -154,10 +154,10 @@ func handleCommand(cmd []string) bool {
 func printHelp() {
 
 	fmt.Println("Usage:\n\t[Command] [Options]")
-	fmt.Println("----HELP----:\n\tWill display this message, have fun, go crazy")
-	fmt.Println("----SCAN----:\n\t-h: Used to specify the host name (full domain or IP)\n\t-p: Used to specify the port(s), a range can be specified with two ports separated by commas (-p 1,100), or ALL for all ports\n\t-T: Used to specifc the amount of goroutines used. Use MAX for 10000+ routines (speeds up scan)\n\t-v: Verbose mode")
-	fmt.Println("----QUIT----\n\tWill quit the program")
-	fmt.Println("----CLEAR----\n\tI feel like this is very self-explanatory")
+	fmt.Println("help:\n\tWill display this message, have fun, go crazy")
+	fmt.Println("scan:\n\t-h: Used to specify the host name (full domain or IP)\n\t-p: Used to specify the port(s), a range can be specified with two ports separated by commas (-p 1,100), or ALL for all ports\n\t-T: Used to specifc the amount of goroutines used. Use MAX for 10000+ routines (speeds up scan)\n\t-v: Verbose mode")
+	fmt.Println("quit\n\tWill quit the program")
+	fmt.Println("clear\n\tI feel like this is very self-explanatory")
 }
 
 // loops through the user inputted command and checks for a flag, returning a boolean and index in the array
