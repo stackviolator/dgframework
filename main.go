@@ -135,6 +135,8 @@ func handleCommand(cmd []string) bool {
 		fmt.Println("Scanned", portIntegers[1]-portIntegers[0]+1, "ports in", difference, "seconds")
 
 		return true
+	case "heartbeat":
+		hb.Send_hb()
 	case "quit":
 		os.Exit(0)
 	default:
