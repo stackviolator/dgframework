@@ -45,7 +45,7 @@ func echo(conn net.Conn) {
 	writer.Flush()
 }
 
-func Send_hb() {
+func Server() {
 	// Bind to TCP port 20080 on all interfaces.
 	listener, err := net.Listen("tcp", ":20080")
 	if err != nil {
@@ -64,4 +64,32 @@ func Send_hb() {
 			go echo(conn)
 		}
 	}
+}
+
+func Heartbleed(address string, port string) {
+	// get options, for now hardcoded
+	address = address + ":" + port
+	check(address)
+}
+
+func check(address string) {
+	//
+	fmt.Println(address)
+	//create socket with connect()
+	conn, err := net.Dial("tcp", address)
+
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	defer conn.Close()
+	// tls(s, quiet)
+
+	version := parseResp()
+	fmt.Println(version)
+}
+
+func parseResp() string {
+	fmt.Println("Parse resp")
+	return ":)"
 }

@@ -142,7 +142,13 @@ func handleCommand(cmd []string) bool {
 
 		return true
 	case "heartbeat":
-		hb.Send_hb()
+		address, hostIndex := checkContains(cmd, "-h")
+		port, portIndex := checkContains(cmd, "-p")
+		if address && port {
+			hb.Heartbleed(cmd[hostIndex+1], cmd[portIndex+1])
+		} else {
+			printHelp()
+		}
 	case "quit":
 		os.Exit(0)
 	default:
