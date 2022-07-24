@@ -1,5 +1,5 @@
 # DG Framework
-Digital Gangster\
+Hand crafted, artisan code\
 very cool and super epic framework used for port/ vuln scanning + exploitation\
 Work in progress to fill out with exploits and webapp
 # Usage
